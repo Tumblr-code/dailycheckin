@@ -4,6 +4,7 @@ import os
 import sys
 import json
 import time
+import datetime
 import notify
 
 def load_config():
@@ -13,6 +14,11 @@ def load_config():
         sys.exit(1)
     with open(config_path, 'r', encoding='utf-8') as f:
         return json.load(f)
+
+def save_log(message):
+    log_file = os.path.join(os.path.dirname(__file__), 'sign.log')
+    with open(log_file, 'a', encoding='utf-8') as f:
+        f.write(f"[{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] {message}\n")
 
 def main():
     print("=" * 50)
@@ -79,6 +85,7 @@ def main():
     msg = "【每日签到报告】\n"
     for name, result in results:
         msg += f"• {name}: {result}\n"
+        save_log(f"{name}: {result}")
     
     notify.send(config.get('notify', {}), msg)
     
