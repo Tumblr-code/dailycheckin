@@ -1,0 +1,22 @@
+{
+  "notify": {
+    "type": "telegram",
+    "token": "",
+    "user_id": ""
+  },
+  "bilibili": {
+    "cookie": "你的B站Cookie"
+  },
+  "netease": {
+    "cookie": "你的网易云音乐Cookie"
+  },
+  "txvideo": {
+    "cookie": "你的腾讯视频Cookie"
+  },
+  "wps": {
+    "cookie": "你的WPS Cookie"
+  },
+  "iqiyi": {
+    "cookie": "你的爱奇艺Cookie"
+  }
+}
