@@ -17,6 +17,21 @@ def sign(config):
     
     results = []
     
+    # 获取用户信息（验证Cookie）
+    try:
+        url = f"{API_URL}/api/nuser/account/get"
+        r = requests.post(url, headers=headers)
+        data = r.json()
+        if data.get('code') == 200:
+            nickname = data.get('profile', {}).get('nickname', '未知用户')
+            results.append(f"登录成功: {nickname}")
+        else:
+            results.append(f"Cookie验证失败: {data.get('message', '未知错误')}")
+            return " | ".join(results)
+    except Exception as e:
+        results.append(f"验证失败: {e}")
+        return " | ".join(results)
+    
     # 每日签到
     try:
         url = f"{API_URL}/weapi/point/dailySignin"
@@ -25,33 +40,23 @@ def sign(config):
         data = r.json()
         if data.get('code') == 200:
             results.append("签到成功")
+        elif data.get('code') == 301:
+            results.append("已签到")
         else:
-            results.append(f"签到: {data.get('message', '未知错误')}")
+            msg = data.get('msg', data.get('message', '未知'))
+            results.append(f"签到: {msg}")
     except Exception as e:
         results.append(f"签到失败: {e}")
     
-    # 刷歌310首
+    # 获取用户等级
     try:
-        url = f"{API_URL}/weapi/playlist/mylist"
+        url = f"{API_URL}/weapi/user/level"
         r = requests.post(url, headers=headers, data={})
-        playlists = r.json().get('result', {}).get('playlist', [])
-        
-        if playlists:
-            track_ids = playlists[0].get('trackIds', [])[:300]
-            if track_ids:
-                for tid in track_ids[:10]:
-                    try:
-                        play_url = f"{API_URL}/weapi/v3/play/record"
-                        play_data = {
-                            "type": 1,
-                            "id": tid.get('id'),
-                            "time": 240
-                        }
-                        requests.post(play_url, headers=headers, data=play_data)
-                    except:
-                        pass
-                results.append(f"刷歌完成")
-    except Exception as e:
-        results.append(f"刷歌失败: {e}")
+        data = r.json()
+        if data.get('code') == 200:
+            level = data.get('data', {}).get('level', 0)
+            results.append(f"当前等级: L{level}")
+    except:
+        pass
     
     return " | ".join(results) if results else "签到完成"
