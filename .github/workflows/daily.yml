@@ -1,0 +1,65 @@
+name: 每日签到
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 20 * * *'
+
+jobs:
+  sign:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install requests
+
+      - name: Run sign in
+        env:
+          BILIBILI_COOKIE: ${{ secrets.BILIBILI_COOKIE }}
+          NETEASE_COOKIE: ${{ secrets.NETEASE_COOKIE }}
+          TXVIDEO_COOKIE: ${{ secrets.TXVIDEO_COOKIE }}
+          WPS_COOKIE: ${{ secrets.WPS_COOKIE }}
+          IQIYI_COOKIE: ${{ secrets.IQIYI_COOKIE }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_USER_ID: ${{ secrets.TELEGRAM_USER_ID }}
+        run: |
+          cat > config.json << EOF
+          {
+            "notify": {
+              "type": "telegram",
+              "token": "${{ secrets.TELEGRAM_BOT_TOKEN }}",
+              "user_id": "${{ secrets.TELEGRAM_USER_ID }}"
+            },
+            "bilibili": {
+              "cookie": "${{ secrets.BILIBILI_COOKIE }}"
+            },
+            "netease": {
+              "cookie": "${{ secrets.NETEASE_COOKIE }}"
+            },
+            "txvideo": {
+              "cookie": "${{ secrets.TXVIDEO_COOKIE }}"
+            },
+            "wps": {
+              "cookie": "${{ secrets.WPS_COOKIE }}"
+            },
+            "iqiyi": {
+              "cookie": "${{ secrets.IQIYI_COOKIE }}"
+            }
+          }
+          EOF
+          python run.py
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sign-logs
+          path: sign.log
