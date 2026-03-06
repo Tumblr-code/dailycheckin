@@ -17,28 +17,33 @@ def sign(config):
     
     results = []
     
-    # 每日签到
+    # 验证Cookie - 访问主页
     try:
-        url = "https://vip.vip.qq.com/maozi/qqlogin"
-        r = requests.get(url, headers=headers, allow_redirects=False)
-        
-        url2 = "https://vip.vip.qq.com/maozi/act/signed"
-        r2 = requests.get(url2, headers=headers)
-        
-        if r2.status_code == 200:
-            results.append("签到成功")
-        else:
-            results.append(f"签到: HTTP {r2.status_code}")
-    except Exception as e:
-        results.append(f"签到失败: {e}")
-    
-    # 成长值签到
-    try:
-        url = "https://vip.vip.qq.com/maozi/growth/sign"
-        r = requests.get(url, headers=headers)
+        url = f"{API_URL}/x/login"
+        r = requests.get(url, headers=headers, timeout=10)
         if r.status_code == 200:
-            results.append("成长值签到成功")
+            # 从cookie中提取用户名
+            if 'qq_nick=' in cookie:
+                nick = cookie.split('qq_nick=')[1].split(';')[0]
+                nick = requests.utils.unquote(nick)
+                results.append(f"登录成功: {nick}")
+            else:
+                results.append("登录成功")
+        else:
+            results.append(f"Cookie验证失败: HTTP {r.status_code}")
     except Exception as e:
-        results.append(f"成长值签到: {e}")
+        results.append(f"验证失败: {e}")
+        return " | ".join(results)
+    
+    # 尝试签到
+    try:
+        url = "https://v.qq.com/x/bu/mobile_checkin"
+        r = requests.get(url, headers=headers, timeout=5)
+        if r.status_code == 200:
+            results.append("签到成功")
+        elif r.status_code == 404:
+            results.append("签到API已更新")
+    except Exception as e:
+        results.append(f"签到请求失败: {str(e)[:30]}")
     
     return " | ".join(results) if results else "签到完成"
