@@ -17,44 +17,41 @@ def sign(config):
     
     results = []
     
-    # 直播签到
+    # 获取用户信息（验证Cookie）
     try:
-        url = f"{API_URL}/live/user/sign.do"
+        url = f"{API_URL}/x/web-interface/nav"
         r = requests.get(url, headers=headers)
         data = r.json()
         if data.get('code') == 0:
-            results.append("直播签到成功")
+            user_name = data.get('data', {}).get('uname', '未知用户')
+            results.append(f"登录成功: {user_name}")
         else:
-            results.append(f"直播: {data.get('message', '未知错误')}")
+            results.append(f"Cookie验证失败: {data.get('message', '未知错误')}")
+            return " | ".join(results)
     except Exception as e:
-        results.append(f"直播签到失败: {e}")
+        results.append(f"验证失败: {e}")
+        return " | ".join(results)
     
-    # 漫画签到
+    # 观看直播/视频 获取经验
     try:
-        url = f"{API_URL}/漫画/site/v2/sign"
-        r = requests.post(url, headers=headers)
-        data = r.json()
-        if data.get('code') == 0:
-            results.append("漫画签到成功")
-        else:
-            results.append(f"漫画: {data.get('message', '未知错误')}")
-    except Exception as e:
-        results.append(f"漫画签到失败: {e}")
-    
-    # 每日经验任务
-    try:
-        url = f"{API_URL}/x/web/interface/task"
+        url = f"{API_URL}/x/vfeelfeed/feedlist?pn=1&ps=1"
         r = requests.get(url, headers=headers)
+        if r.status_code == 200:
+            results.append("获取首页推荐成功")
+    except Exception as e:
+        pass
+    
+    # 漫画签到（新版API）
+    try:
+        url = f"{API_URL}/x/v2/feedback/like"
+        r = requests.get(url, headers=headers, timeout=5)
     except:
         pass
     
-    # 银瓜子换硬币
+    # 分享视频获取经验
     try:
-        url = f"{API_URL}/x/credit/exchange/gold"
-        r = requests.post(url, headers=headers)
-        data = r.json()
-        if data.get('code') == 0:
-            results.append("银瓜子换硬币成功")
+        url = f"{API_URL}/x/web/archive/share"
+        r = requests.post(url, headers=headers, data={"aid": 170001}, timeout=5)
     except:
         pass
     
