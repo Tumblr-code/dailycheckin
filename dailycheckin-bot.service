@@ -1,0 +1,16 @@
+[Unit]
+Description=Daily Checkin Telegram Bot
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/dailycheckin
+Environment="PATH=/root/dailycheckin/venv/bin"
+Environment="BOT_TOKEN="
+ExecStart=/root/dailycheckin/venv/bin/python /root/dailycheckin/bot.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
